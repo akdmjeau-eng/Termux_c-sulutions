@@ -42,3 +42,18 @@ int main() {
         scheduler();
     }
 }
+// Guardar contexto
+stp x0, x1, [sp, #-16]!
+stp x2, x3, [sp, #-16]!
+...
+stp x29, x30, [sp, #-16]!
+
+// Cambiar puntero de stack al siguiente proceso
+ldr sp, [next_task_sp]
+
+// Restaurar contexto
+ldp x29, x30, [sp], #16
+...
+ldp x0, x1, [sp], #16
+
+eret
