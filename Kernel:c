@@ -13,3 +13,32 @@ void kernel_main(void) {
         __asm__("hlt");
     }
 }
+typedef struct {
+    int pid;
+    void (*entry)(void);
+    int active;
+} task_t;
+#include <stdio.h>
+
+void task1() {
+    printf("Proceso 1 ejecutandose\n");
+}
+
+void task2() {
+    printf("Proceso 2 ejecutandose\n");
+}
+task_t tasks[2];
+int current = 0;
+
+void scheduler() {
+    tasks[current].entry();
+    current = (current + 1) % 2;
+}
+int main() {
+    tasks[0] = (task_t){1, task1, 1};
+    tasks[1] = (task_t){2, task2, 1};
+
+    while (1) {
+        scheduler();
+    }
+}
