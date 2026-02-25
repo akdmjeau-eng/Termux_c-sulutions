@@ -1,0 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    printf("Simulando backup de sistema...\n");
+    system("cp -r system backup/");
+    printf("Backup completado.\n");
+    return 0;
+}
