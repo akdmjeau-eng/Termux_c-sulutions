@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+typedef struct {
+    uint16_t e_magic;      // MZ
+    uint16_t e_cblp;
+    uint16_t e_cp;
+    uint16_t e_crlc;
+    uint16_t e_cparhdr;
+    uint16_t e_minalloc;
+    uint16_t e_maxalloc;
+    uint16_t e_ss;
+    uint16_t e_sp;
+    uint16_t e_csum;
+    uint16_t e_ip;
+    uint16_t e_cs;
+    uint16_t e_lfarlc;
+    uint16_t e_ovno;
+    uint8_t  e_res[8];
+    uint16_t e_oemid;
+    uint16_t e_oeminfo;
+    uint8_t  e_res2[20];
+    uint32_t e_lfanew;     // Offset al header PE
+} DOSHeader;
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Uso: %s archivo.exe\n", argv[0]);
+        return 1;
+    }
+
+    FILE *f = fopen(argv[1], "rb");
+    if (!f) {
+        perror("Error abriendo archivo");
+        return 1;
+    }
+
+    DOSHeader dos;
+    fread(&dos, sizeof(DOSHeader), 1, f);
+
+    if (dos.e_magic != 0x5A4D) { // "MZ"
+        printf("No es un ejecutable PE valido\n");
+        fclose(f);
+        return 1;
+    }
+
+    printf("Firma DOS valida (MZ)\n");
+    printf("Offset al header PE: 0x%X\n", dos.e_lfanew);
+
+    fclose(f);
+    return 0;
+}
