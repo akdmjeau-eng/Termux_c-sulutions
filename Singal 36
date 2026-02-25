@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+
+void handler(int sig, siginfo_t *info, void *ucontext) {
+    printf("Señal recibida: %d\n", sig);
+    printf("Código: %d\n", info->si_code);
+    exit(1);
+}
+
+int main() {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+
+    sa.sa_sigaction = handler;
+    sa.sa_flags = SA_SIGINFO;
+
+    if (sigaction(36, &sa, NULL) == -1) {
+        perror("Error registrando señal");
+        return 1;
+    }
+
+    printf("Esperando señal 36...\n");
+
+    while (1) {
+        pause();
+    }
+
+    return 0;
+}
