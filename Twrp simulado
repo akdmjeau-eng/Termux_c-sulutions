@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void install_img() {
+    printf("Simulando instalación de imagen...\n");
+    // Aquí podrías agregar lógica de copiar un archivo .img
+}
+
+void backup_system() {
+    printf("Simulando backup del sistema...\n");
+    system("mkdir -p backup");
+    system("cp -r system/* backup/ 2>/dev/null");
+    printf("Backup completado.\n");
+}
+
+void restore_system() {
+    printf("Simulando restore del sistema...\n");
+    system("cp -r backup/* system/ 2>/dev/null");
+    printf("Restore completado.\n");
+}
+
+void wipe_data() {
+    printf("Simulando wipe de datos...\n");
+    // Borramos carpetas simuladas: data, cache
+    system("rm -rf data/* cache/* 2>/dev/null");
+    printf("Wipe completado.\n");
+}
+
+void reboot_system() {
+    printf("Simulando reboot...\n");
+}
+
+int main() {
+    int choice;
+    while(1){
+        printf("\n=== TWRP Simulado ===\n");
+        printf("1. Install\n");
+        printf("2. Backup\n");
+        printf("3. Restore\n");
+        printf("4. Wipe\n");
+        printf("5. Reboot\n");
+        printf("Elige opción: ");
+        scanf("%d", &choice);
+
+        switch(choice){
+            case 1: install_img(); break;
+            case 2: backup_system(); break;
+            case 3: restore_system(); break;
+            case 4: wipe_data(); break;
+            case 5: reboot_system(); return 0;
+            default: printf("Opción no válida\n"); break;
+        }
+    }
+    return 0;
+}
