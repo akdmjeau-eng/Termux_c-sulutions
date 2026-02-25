@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define TARGET_SIGNAL 36
+
+void handler(int sig, siginfo_t *info, void *ucontext) {
+    char buffer[128];
+    int len = 0;
+
+    len = snprintf(buffer, sizeof(buffer),
+                   "Señal recibida: %d\nCodigo: %d\n",
+                   sig, info ? info->si_code : -1);
+
+    if (len > 0) {
+        write(STDOUT_FILENO, buffer, len);
+    }
+
+    _exit(128 + sig);  // Convención Unix para salida por señal
+}
+
+int main(void) {
+    struct sigaction sa;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_sigaction = handler;
+    sa.sa_flags = SA_SIGINFO | SA_RESTART;
+    sigemptyset(&sa.sa_mask);
+
+    if (sigaction(TARGET_SIGNAL, &sa, NULL) == -1) {
+        perror("Error registrando señal");
+        return EXIT_FAILURE;
+    }
+
+    printf("PID: %d\n", getpid());
+    printf("Esperando señal %d...\n", TARGET_SIGNAL);
+
+    while (1) {
+        pause();
+    }
+
+    return 0;
+}
