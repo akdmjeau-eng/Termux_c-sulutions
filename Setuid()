@@ -1,0 +1,17 @@
+#include <iostream>
+#include <unistd.h>
+
+int main() {
+    std::cout << "UID real: " << getuid() << std::endl;
+    std::cout << "UID efectivo: " << geteuid() << std::endl;
+
+    if (setuid(0) == 0) {
+        std::cout << "Intentando cambiar a UID 0..." << std::endl;
+    } else {
+        std::cout << "No se pudo cambiar UID (no tienes permisos)." << std::endl;
+    }
+
+    std::cout << "UID después del intento: " << getuid() << std::endl;
+
+    return 0;
+}
