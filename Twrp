@@ -1,0 +1,25 @@
+#include <stdio.h>
+
+int main() {
+    int choice;
+    while(1){
+        printf("=== TWRP Simulado ===\n");
+        printf("1. Install\n");
+        printf("2. Backup\n");
+        printf("3. Restore\n");
+        printf("4. Wipe\n");
+        printf("5. Reboot\n");
+        printf("Elige opción: ");
+        scanf("%d", &choice);
+
+        switch(choice){
+            case 1: printf("Simulando instalación...\n"); break;
+            case 2: printf("Simulando backup...\n"); break;
+            case 3: printf("Simulando restore...\n"); break;
+            case 4: printf("Simulando wipe...\n"); break;
+            case 5: printf("Reiniciando sistema...\n"); return 0;
+            default: printf("Opción no válida\n"); break;
+        }
+    }
+    return 0;
+}
