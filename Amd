@@ -1,0 +1,19 @@
+#include <linux/module.h>
+#include <linux/pci.h>
+#include <linux/kernel.h>
+
+static int __init amd_driver_init(void) {
+    printk(KERN_INFO "Driver AMD cargado (simulado)\n");
+    return 0;
+}
+
+static void __exit amd_driver_exit(void) {
+    printk(KERN_INFO "Driver AMD descargado\n");
+}
+
+module_init(amd_driver_init);
+module_exit(amd_driver_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Ingeniería");
+MODULE_DESCRIPTION("Módulo Linux educativo para soporte AMD");
