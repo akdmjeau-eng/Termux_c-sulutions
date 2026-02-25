@@ -1,0 +1,5 @@
+void install_img(const char* img);
+void backup_system();
+void restore_system();
+void wipe_data();
+void reboot_system();
