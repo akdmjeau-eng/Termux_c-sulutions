@@ -1,0 +1,3 @@
+nasm -f elf64 boot.asm -o boot.o
+clang -ffreestanding -c kernel.c -o kernel.o
+ld -T linker.ld boot.o kernel.o -o kernel.elf
