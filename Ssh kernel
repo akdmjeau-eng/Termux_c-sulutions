@@ -1,0 +1,52 @@
+#include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <thread>
+
+void forward_traffic(int src, int dest) {
+    char buffer[4096];
+    ssize_t bytes;
+    while ((bytes = recv(src, buffer, sizeof(buffer), 0)) > 0) {
+        send(dest, buffer, bytes, 0);
+    }
+    close(src);
+    close(dest);
+}
+
+int main() {
+    int server_fd, client_fd, remote_fd;
+    struct sockaddr_in address, remote_addr;
+    int opt = 1;
+
+    // Crear socket para escuchar conexiones de Kali A
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(8888); // Puerto local del túnel
+
+    bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+    listen(server_fd, 3);
+
+    std::cout << "🚀 Túnel activo en puerto 8888. Esperando a Kali A..." << std::endl;
+
+    while (true) {
+        client_fd = accept(server_fd, NULL, NULL);
+
+        // Conectar al SSH de Kali B (ejemplo: puerto 2222)
+        remote_fd = socket(AF_INET, SOCK_STREAM, 0);
+        remote_addr.sin_family = AF_INET;
+        remote_addr.sin_port = htons(2222);
+        inet_pton(AF_INET, "127.0.0.1", &remote_addr.sin_addr);
+
+        if (connect(remote_fd, (struct sockaddr *)&remote_addr, sizeof(remote_addr)) == 0) {
+            // Hilos para tráfico bidireccional
+            std::thread(forward_traffic, client_fd, remote_fd).detach();
+            std::thread(forward_traffic, remote_fd, client_fd).detach();
+        }
+    }
+    return 0;
+}
