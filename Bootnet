@@ -1,0 +1,57 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <ctime>
+
+struct Node {
+    std::string id;
+    std::string type; // "Car", "Light", "VM", "Arch"
+    long last_seen;
+    bool status;
+};
+
+class BotnetOrchestrator {
+private:
+    std::map<std::string, Node> fleet;
+
+public:
+    // Registra o actualiza un dispositivo en tu red
+    void register_node(std::string id, std::string type) {
+        fleet[id] = {id, type, std::time(0), true};
+        std::cout << "📡 Nodo registrado: [" << type << "] ID: " << id << std::endl;
+    }
+
+    // Simula el envío de un comando a todos los nodos (Persistencia total)
+    void broadcast_command(std::string cmd) {
+        std::cout << "⚡ Enviando comando global: " << cmd << std::endl;
+        for (auto const& [id, node] : fleet) {
+            // Aquí se integraría con el motor WiFi que hicimos antes
+            std::cout << " -> Ejecutando en " << id << " (" << node.type << ")... OK" << std::endl;
+        }
+    }
+
+    void list_active_nodes() {
+        std::cout << "\n--- PANEL DE CONTROL DE FLOTA ---" << std::endl;
+        for (auto const& [id, node] : fleet) {
+            std::cout << "[" << node.type << "] " << id << " | Status: " << (node.status ? "ONLINE" : "OFFLINE") << std::endl;
+        }
+    }
+};
+
+int main() {
+    BotnetOrchestrator master;
+
+    // Simulación de autoconectividad de nodos
+    master.register_node("OBD2-Automovil", "Car");
+    master.register_node("Arch-Linux-Rootless", "Arch");
+    master.register_node("LivingRoom-Bulb-01", "Light");
+    master.register_node("Kali-VM-VNC", "VM");
+
+    master.list_active_nodes();
+
+    // Ejemplo: Poner todo el ecosistema en modo ahorro
+    master.broadcast_command("SYSTEM_OPTIMIZE_RESOURCES");
+
+    return 0;
+}
