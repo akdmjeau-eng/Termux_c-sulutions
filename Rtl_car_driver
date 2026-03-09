@@ -1,0 +1,41 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+
+class CarSignalIntercepter {
+public:
+    // Configura la frecuencia de escucha según el tipo de auto (Deportivo/Gama Alta)
+    void tune_frequency(double mhz) {
+        std::cout << "📡 Sintonizando receptor SDR a " << mhz << " MHz..." << std::endl;
+        // Interfaz con herramientas como rtl_433 o hackrf_transfer
+        std::string cmd = "hackrf_transfer -r car_signal.raw -f " + std::to_string(mhz * 1000000);
+        system(cmd.c_str());
+    }
+
+    // Analiza la señal capturada buscando patrones de Rolling Code (HCS301, etc.)
+    void analyze_captured_signal() {
+        std::cout << "🔍 Analizando tramas de datos capturadas..." << std::endl;
+        // Llamada al motor de depuración Python que creamos para procesar la señal
+        system("python3 signal_analyzer.py --file car_signal.raw");
+    }
+
+    // Simulación de ataque por Replay o Jam-and-Replay (RollJam)
+    void execute_rolljam_sequence() {
+        std::cout << "⚡ Iniciando secuencia RollJam..." << std::endl;
+        std::cout << "1. Interceptando primera señal y bloqueando receptor del auto..." << std::endl;
+        std::cout << "2. Almacenando código válido para apertura posterior..." << std::endl;
+        // Aquí el C++ gestiona el tiempo crítico de milisegundos
+    }
+};
+
+int main() {
+    CarSignalIntercepter car_hack;
+
+    // Frecuencia común para autos en América
+    car_hack.tune_frequency(315.0);
+    car_hack.execute_rolljam_sequence();
+    car_hack.analyze_captured_signal();
+
+    return 0;
+}
