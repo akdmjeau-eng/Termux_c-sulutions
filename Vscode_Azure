@@ -1,0 +1,44 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+class AzureBridge {
+public:
+    // Configura el túnel de puertos para VS Code
+    void setup_port_forwarding(int local_port, int remote_port) {
+        std::cout << "🌐 Mapeando puerto local " << local_port << " a Azure/Remote..." << std::endl;
+        
+        // Comando para crear un túnel persistente (usando SSH o Azure Relay)
+        std::string tunnel_cmd = "ssh -N -R " + std::to_string(remote_port) + 
+                                 ":localhost:" + std::to_string(local_port) + " azure_user@gateway.azure.com &";
+        
+        if (system(tunnel_cmd.c_str()) == 0) {
+            std::cout << "✅ Túnel activo: Accede vía port-" << remote_port << ".azure.com" << std::endl;
+        }
+    }
+
+    // Soporte para Azure CLI (Azufre) en entornos Rootless
+    void sync_azure_identity() {
+        std::cout << "☁️ Sincronizando identidad con Azure Cloud..." << std::endl;
+        // Nos aseguramos de que el token de Azure esté disponible para Python y C++
+        system("az account show --output table");
+    }
+
+    // Expone el servidor de VS Code (code-server)
+    void launch_vscode_server() {
+        std::cout << "🖥️ Iniciando VS Code Server en el puerto 8080..." << std::endl;
+        system("code-server --auth none --port 8080 &");
+    }
+};
+
+int main() {
+    AzureBridge az_engine;
+
+    az_engine.sync_azure_identity();
+    az_engine.launch_vscode_server();
+    
+    // Abrimos el puerto 8080 (VS Code) y el 443 (Servicios)
+    az_engine.setup_port_forwarding(8080, 443);
+
+    return 0;
+}
