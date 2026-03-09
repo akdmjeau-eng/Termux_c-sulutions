@@ -1,0 +1,50 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sys/wait.h>
+#include <unistd.h>
+
+struct Step {
+    std::string name;
+    std::string command;
+};
+
+class CIWorkflow {
+public:
+    void addStep(std::string name, std::string cmd) {
+        steps.push_back({name, cmd});
+    }
+
+    void run() {
+        std::cout << "🚀 Iniciando Android CI Workflow en Entorno Virtual..." << std::endl;
+        for (const auto& step : steps) {
+            std::cout << "\n[STAGE: " << step.name << "]" << std::endl;
+            if (!execute(step.command)) {
+                std::cerr << "❌ Falla crítica en: " << step.name << std::endl;
+                return;
+            }
+        }
+        std::cout << "\n✅ Workflow completado con éxito." << std::endl;
+    }
+
+private:
+    bool execute(std::string cmd) {
+        int status = system(cmd.c_str());
+        return (WIFEXITED(status) && WEXITSTATUS(status) == 0);
+    }
+    std::vector<Step> steps;
+};
+
+int main() {
+    CIWorkflow androidCI;
+
+    // Configuración del Pipeline de Android
+    androidCI.addStep("Check Environment", "java -version && gradlew --version");
+    androidCI.addStep("Lint & Static Analysis", "./gradlew lint");
+    androidCI.addStep("Unit Tests", "./gradlew test");
+    androidCI.addStep("Build APK (Debug)", "./gradlew assembleDebug");
+
+    androidCI.run();
+
+    return 0;
+}
