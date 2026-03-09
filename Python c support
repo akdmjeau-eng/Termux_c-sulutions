@@ -1,0 +1,60 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fstream>
+
+class PythonDebuggerBase {
+public:
+    // Configura las banderas de depuración de Python a nivel de sistema
+    void set_debug_env() {
+        std::cout << "🐛 Configurando entorno de depuración Python..." << std::endl;
+        setenv("PYTHONDEVMODE", "1", 1);       // Activa el modo desarrollo
+        setenv("PYTHONFAULTHANDLER", "1", 1);  // Captura errores graves (Segfaults)
+        setenv("PYTHONMALLOC", "debug", 1);    // Rastrea el uso de memoria
+    }
+
+    // Ejecuta y supervisa un script de Python
+    void monitor_python_script(std::string script_path) {
+        std::cout << "🚀 Iniciando supervisión de: " << script_path << std::endl;
+        
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Proceso hijo: Ejecuta Python con el envoltorio de C++
+            execlp("python3", "python3", script_path.c_str(), nullptr);
+            exit(1);
+        } else {
+            // Proceso padre: Vigila el comportamiento
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (WIFSIGNALED(status)) {
+                int sig = WTERMSIG(status);
+                std::cerr << "❌ El script de Python falló con la señal: " << sig << std::endl;
+                analyze_signal(sig);
+            } else if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+                std::cerr << "⚠️ Python salió con error. Revisando logs de compatibilidad..." << std::endl;
+            }
+        }
+    }
+
+private:
+    void analyze_signal(int sig) {
+        if (sig == 11) std::cerr << "💡 Sugerencia: Error de memoria. Revisa los drivers de la tarjeta WiFi o librerías C++ externas." << std::endl;
+        if (sig == 9)  std::cerr << "💡 Sugerencia: Android mató el proceso. Revisa el consumo de RAM en Android 15." << std::endl;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    PythonDebuggerBase debugger;
+    debugger.set_debug_env();
+
+    if (argc > 1) {
+        debugger.monitor_python_script(argv[1]);
+    } else {
+        std::cout << "Uso: ./py_debug script.py" << std::endl;
+    }
+
+    return 0;
+}
