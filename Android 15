@@ -1,0 +1,50 @@
+#include <iostream>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <vector>
+
+class Android15Bridge {
+public:
+    // Usa 'am broadcast' para enviar señales al sistema Android 15
+    void send_android_intent(std::string action, std::string extra) {
+        std::string cmd = "am broadcast -a " + action + " --es data '" + extra + "' --user 0";
+        system(cmd.c_str());
+        std::cout << "📲 Intent enviado a Android 15: " << action << std::endl;
+    }
+
+    // Escucha comandos desde Termux vía Unix Socket
+    void start_ipc_server() {
+        int server_fd, client_fd;
+        struct sockaddr_un server_addr;
+
+        server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+        server_addr.sun_family = AF_UNIX;
+        strcpy(server_addr.sun_path, "/data/data/com.termux/files/usr/tmp/termux_kernel.sock");
+        
+        unlink(server_addr.sun_path);
+        bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+        listen(server_fd, 5);
+
+        std::cout << "🤖 Kernel de Integración escuchando en Termux Socket..." << std::endl;
+
+        while (true) {
+            client_fd = accept(server_fd, NULL, NULL);
+            char buffer[256] = {0};
+            read(client_fd, buffer, 256);
+            
+            // Lógica de compatibilidad: Si recibes "LIGHTS_ON", envías el Intent a Android
+            std::string request(buffer);
+            if (request.find("CAR_SYNC") != std::string::npos) {
+                send_android_intent("com.termux.CAR_COMMAND", "sync_all");
+            }
+            close(client_fd);
+        }
+    }
+};
+
+int main() {
+    Android15Bridge bridge;
+    bridge.start_ipc_server();
+    return 0;
+}
