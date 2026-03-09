@@ -1,0 +1,55 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sys/wait.h>
+
+struct StepResult {
+    bool success;
+    int exit_code;
+    std::string error_hint;
+};
+
+class SmartCI {
+public:
+    StepResult execute_with_retry(std::string name, std::string cmd, int max_retries = 2) {
+        int attempt = 0;
+        int status;
+        
+        while (attempt <= max_retries) {
+            std::cout << "▶️ Ejecutando: " << name << " (Intento " << attempt + 1 << ")..." << std::endl;
+            status = system(cmd.c_str());
+            
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+                return {true, 0, ""};
+            }
+            
+            attempt++;
+            std::cout << "⚠️ Falló. Analizando causas..." << std::endl;
+            // Aquí podrías añadir lógica de limpieza antes del reintento
+            system("./gradlew --stop"); // Ejemplo: Limpiar demonios de Gradle si falla
+        }
+        
+        return {false, WEXITSTATUS(status), diagnose_failure(WEXITSTATUS(status))};
+    }
+
+private:
+    std::string diagnose_failure(int code) {
+        if (code == 137) return "Out of Memory (OOM) - Android mató el proceso.";
+        if (code == 127) return "Comando no encontrado - Revisa tus PATHs.";
+        if (code == 1) return "Error lógico en el código o tests fallidos.";
+        return "Error desconocido.";
+    }
+};
+
+int main() {
+    SmartCI ci;
+    auto result = ci.execute_with_retry("Android Build", "./gradlew assembleDebug");
+
+    if (!result.success) {
+        std::cout << "\n❌ REPORTE DE FALLO:" << std::endl;
+        std::cout << "Código de salida: " << result.exit_code << std::endl;
+        std::cout << "Sugerencia: " << result.error_hint << std::endl;
+    }
+    return 0;
+}
