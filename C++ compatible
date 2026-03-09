@@ -1,0 +1,63 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <thread>
+
+// Clase base para cualquier dispositivo (Auto, Lámpara, Refri)
+class SmartDevice {
+public:
+    virtual void connect() = 0;
+    virtual void send_command(std::string cmd) = 0;
+    virtual std::string get_status() = 0;
+    virtual ~SmartDevice() {}
+};
+
+// Módulo para Autos (vía WiFi/Bluetooth OBD-II)
+class CarModule : public SmartDevice {
+public:
+    void connect() override { std::cout << "🚗 Conectado al CAN Bus del Auto..." << std::endl; }
+    void send_command(std::string cmd) override { std::cout << "Car Command: " << cmd << std::endl; }
+    std::string get_status() override { return "Combustible: 75%, Motor: OK"; }
+};
+
+// Módulo para Lámparas (Protocolo WiFi/HTTP)
+class LightModule : public SmartDevice {
+public:
+    void connect() override { std::cout << "💡 Lámparas sincronizadas vía WiFi." << std::endl; }
+    void send_command(std::string cmd) override { std::cout << "Light Command: " << cmd << std::endl; }
+    std::string get_status() override { return "Brillo: 80%, Color: Warm White"; }
+};
+
+// Orquestador: El "Kernel" que une todo
+class CompatibilityKernel {
+private:
+    std::map<std::string, SmartDevice*> registry;
+public:
+    void register_device(std::string name, SmartDevice* dev) {
+        registry[name] = dev;
+        dev->connect();
+    }
+
+    void broadcast_all(std::string cmd) {
+        for (auto const& [name, dev] : registry) {
+            std::cout << "[" << name << "] -> ";
+            dev->send_command(cmd);
+        }
+    }
+};
+
+int main() {
+    CompatibilityKernel core;
+
+    // Registro de dispositivos (Compatibilidad total)
+    core.register_device("Tesla_Model_3", new CarModule());
+    core.register_device("Living_Room_Lights", new LightModule());
+
+    std::cout << "\n🌐 Sistema de Compatibilidad Cruzada Activo." << std::endl;
+    
+    // Un solo comando afecta a todos los ecosistemas
+    core.broadcast_all("MODE_ENERGY_SAVING");
+
+    return 0;
+}
