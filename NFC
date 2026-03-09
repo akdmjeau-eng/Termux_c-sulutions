@@ -1,0 +1,62 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <thread>
+
+enum class NFCStatus { READY, READING, ERROR, TIMEOUT };
+
+struct NFCPacket {
+    std::string uid;
+    std::vector<uint8_t> payload;
+    NFCStatus status;
+};
+
+class NFCController {
+public:
+    // Simula la espera de un tag (Job)
+    NFCPacket scan_tag(int timeout_ms) {
+        std::cout << "📡 Buscando etiqueta NFC..." << std::endl;
+        
+        auto start = std::chrono::steady_clock::now();
+        
+        while (true) {
+            // Lógica: Aquí se leería el socket o el dispositivo /dev/nfc
+            // Simulamos un fallo común de "Timeout"
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+
+            if (elapsed > timeout_ms) {
+                return {"", {}, NFCStatus::TIMEOUT};
+            }
+
+            // Simulación de lectura exitosa (puedes activar esto para pruebas)
+            /*
+            return {"DE:AD:BE:EF", {0x01, 0x02, 0x03}, NFCStatus::READY};
+            */
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+    }
+};
+
+int main() {
+    NFCController nfc;
+    int max_attempts = 3;
+
+    for (int i = 0; i < max_attempts; ++i) {
+        auto result = nfc.scan_tag(5000); // 5 segundos de espera
+
+        if (result.status == NFCStatus::READY) {
+            std::cout << "✅ Tag Detectado! UID: " << result.uid << std::endl;
+            break;
+        } else if (result.status == NFCStatus::TIMEOUT) {
+            std::cerr << "⚠️ Job Failed: Timeout en intento " << i + 1 << std::endl;
+            if (i == max_attempts - 1) {
+                std::cerr << "❌ Error crítico: No se encontró hardware NFC o Tag." << std::endl;
+            }
+        }
+    }
+
+    return 0;
+}
