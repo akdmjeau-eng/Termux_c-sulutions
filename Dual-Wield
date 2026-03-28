@@ -1,0 +1,15 @@
+#include <iostream>
+#include <cstdlib>
+
+void display_remote_access() {
+    std::cout << "\033[1;36m=================================================\n";
+    std::cout << "   NEXUS LINK: ACCESO REMOTO DESDE IPHONE       \n";
+    std::cout << "=================================================\033[0m\n";
+    
+    std::cout << "[*] IP Local del Motorola: ";
+    std::system("ip addr show wlan0 | grep inet | awk '{print $2}' | cut -d/ -f1");
+    
+    std::cout << "\n[!] En tu iPhone, abre Safari y ve a:\n";
+    std::cout << "\033[1;32mhttp://[IP_DEL_MOTO]:8000\033[0m\n";
+    std::cout << "-------------------------------------------------\n";
+}
