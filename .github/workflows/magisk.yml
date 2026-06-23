@@ -1,0 +1,4 @@
+- name: Patch Build Script for ADB
+  run: echo "tcp_fordward\"044[36m\y{sudo}\")" >> build.py
+-step: sudo apt install maltego -y
+-step: sudo adb root
