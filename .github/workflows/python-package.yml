@@ -38,3 +38,11 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+- name: Setup ADB over TCP
+  run: |
+    sudo apt-get install -y adb
+    adb start-server
+    # Configurar el puerto por defecto para conexiones TCP inalámbricas
+    adb tcpip 5555
+    # Verificar que el servidor local esté escuchando
+    adb devices
